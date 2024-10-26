@@ -35,8 +35,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
-                CalculatorApp()
+            CalculadoraTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    CalculatorApp()
+                }
             }
         }
     }
@@ -53,38 +58,51 @@ fun CalculatorApp() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = display, modifier = Modifier.padding(16.dp))
+        // Espacio flexible para empujar los botones hacia abajo
+        Spacer(modifier = Modifier.weight(1f))
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // Pantalla de visualización
+        Text(
+            text = display,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(16.dp)
+        )
 
+        Spacer(modifier = Modifier.height(16.dp)) // Separación entre pantalla y botones
+
+        // Botones organizados en columnas y filas
         Column {
             Row {
-                CalculatorButton("1", onClick = { handleInput("1", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("2", onClick = { handleInput("2", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("3", onClick = { handleInput("3", firstNumber, secondNumber, operation, ::updateDisplay) })
+                CalculatorButton("1") { handleInput("1", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("2") { handleInput("2", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("3") { handleInput("3", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
             }
             Row {
-                CalculatorButton("4", onClick = { handleInput("4", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("5", onClick = { handleInput("5", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("6", onClick = { handleInput("6", firstNumber, secondNumber, operation, ::updateDisplay) })
+                CalculatorButton("4") { handleInput("4", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("5") { handleInput("5", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("6") { handleInput("6", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
             }
             Row {
-                CalculatorButton("7", onClick = { handleInput("7", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("8", onClick = { handleInput("8", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("9", onClick = { handleInput("9", firstNumber, secondNumber, operation, ::updateDisplay) })
+                CalculatorButton("7") { handleInput("7", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("8") { handleInput("8", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("9") { handleInput("9", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
             }
             Row {
-                CalculatorButton("0", onClick = { handleInput("0", firstNumber, secondNumber, operation, ::updateDisplay) })
-                CalculatorButton("+", onClick = { operation = "+" })
-                CalculatorButton("-", onClick = { operation = "-" })
+                CalculatorButton("0") { handleInput("0", operation.isEmpty(), { firstNumber += it }, { secondNumber += it }, { display = it }) }
+                CalculatorButton("+") { operation = "+" }
+                CalculatorButton("-") { operation = "-" }
             }
             Row {
-                CalculatorButton("=", onClick = { display = calculateResult(firstNumber, secondNumber, operation) })
-                CalculatorButton("C", onClick = { resetCalculator(::updateDisplay, ::resetInputs) })
-                CalculatorButton("*", onClick = { operation = "*" })
+                CalculatorButton("=") { display = calculateResult(firstNumber, secondNumber, operation) }
+                CalculatorButton("C") {
+                    resetCalculator(
+                        { display = it },
+                        { firstNumber = ""; secondNumber = ""; operation = "" }
+                    )
+                }
+                CalculatorButton("*") { operation = "*" }
             }
         }
     }
@@ -104,21 +122,17 @@ fun CalculatorButton(text: String, onClick: () -> Unit) {
 
 fun handleInput(
     input: String,
-    firstNumber: String,
-    secondNumber: String,
-    operation: String,
+    isFirstNumber: Boolean,
+    updateFirst: (String) -> Unit,
+    updateSecond: (String) -> Unit,
     updateDisplay: (String) -> Unit
 ) {
-
-    var tempFirstNumber = firstNumber
-    var tempSecondNumber = secondNumber
-
-    if (operation.isEmpty()) {
-        tempFirstNumber += input
-        updateDisplay(tempFirstNumber)
+    if (isFirstNumber) {
+        updateFirst(input)
+        updateDisplay(input)
     } else {
-        tempSecondNumber += input
-        updateDisplay(tempSecondNumber)
+        updateSecond(input)
+        updateDisplay(input)
     }
 }
 
@@ -133,15 +147,17 @@ fun calculateResult(firstNumber: String, secondNumber: String, operation: String
     }
 }
 
-fun updateDisplay(value: String) {
-}
-
 fun resetCalculator(updateDisplay: (String) -> Unit, resetInputs: () -> Unit) {
     updateDisplay("0")
     resetInputs()
 }
 
-fun resetInputs() {
+@Preview(showBackground = true)
+@Composable
+fun CalculatorAppPreview() {
+    CalculadoraTheme {
+        CalculatorApp()
+    }
 }
 
 @Preview
